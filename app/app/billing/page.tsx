@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { appConfig } from "@/lib/config";
 import { getStripeClient } from "@/lib/stripe";
