@@ -1,0 +1,139 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  FREE
+  STARTER
+  PRO
+  BUSINESS
+}
+
+enum SiteStatus {
+  DRAFT
+  STAGED
+  PUBLISHED
+}
+
+model User {
+  id              String         @id @default(cuid())
+  email           String         @unique
+  name            String?
+  hashedPassword  String?
+  workspaces      Workspace[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Workspace {
+  id              String         @id @default(cuid())
+  name            String
+  plan            Plan           @default(FREE)
+  ownerId         String
+  owner           User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  websites        Website[]
+  subscription    Subscription?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Website {
+  id              String         @id @default(cuid())
+  workspaceId     String
+  workspace       Workspace      @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  name            String
+  slug            String         @unique
+  prompt          String
+  niche           String?
+  theme           String?
+  status          SiteStatus     @default(DRAFT)
+  seoTitle        String?
+  seoDescription  String?
+  generatedJson   String?
+  customDomain    Domain?
+  pages           Page[]
+  leads           Lead[]
+  versions        SiteVersion[]
+  chatMessages    ChatMessage[]
+  analytics       AnalyticsDay[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Page {
+  id              String         @id @default(cuid())
+  websiteId       String
+  website         Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  title           String
+  slug            String
+  order           Int            @default(0)
+  contentJson     String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model SiteVersion {
+  id              String         @id @default(cuid())
+  websiteId       String
+  website         Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  label           String
+  snapshotJson    String
+  createdAt       DateTime       @default(now())
+}
+
+model ChatMessage {
+  id              String         @id @default(cuid())
+  websiteId       String
+  website         Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  role            String
+  content         String
+  createdAt       DateTime       @default(now())
+}
+
+model Domain {
+  id              String         @id @default(cuid())
+  websiteId       String         @unique
+  website         Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  hostname        String         @unique
+  provider        String?
+  verified        Boolean        @default(false)
+  sslEnabled      Boolean        @default(false)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model Lead {
+  id              String         @id @default(cuid())
+  websiteId       String
+  website         Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  name            String
+  email           String
+  message         String?
+  createdAt       DateTime       @default(now())
+}
+
+model AnalyticsDay {
+  id              String         @id @default(cuid())
+  websiteId       String
+  website         Website        @relation(fields: [websiteId], references: [id], onDelete: Cascade)
+  date            DateTime
+  visits          Int            @default(0)
+  leads           Int            @default(0)
+  conversions     Float          @default(0)
+}
+
+model Subscription {
+  id                        String      @id @default(cuid())
+  workspaceId               String      @unique
+  workspace                 Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  stripeCustomerId          String?     @unique
+  stripeSubscriptionId      String?     @unique
+  status                    String?
+  createdAt                 DateTime    @default(now())
+  updatedAt                 DateTime    @updatedAt
+}
