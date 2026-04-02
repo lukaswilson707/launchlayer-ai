@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Sparkles, Wand2, Globe, CreditCard, BarChart3, Users, ArrowRight, Check } from "lucide-react";
 import { appConfig } from "@/lib/config";
